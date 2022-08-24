@@ -4,11 +4,21 @@
 #include <BLE2902.h>
 #include <ESP32MotorControl.h> 
 
-// DRV8833 pin connection
-#define IN1pin 16  
-#define IN2pin 17  
-#define IN3pin 18 
-#define IN4pin 19
+// Motor 1
+int motor1Pin1 = 27; 
+int motor1Pin2 = 26; 
+int enable1Pin = 14;
+
+// Motor 2
+int motor2Pin1 = 15; 
+int motor2Pin2 = 13; 
+int enable2Pin = 12; 
+
+// Setting PWM properties
+const int freq = 30000;
+const int pwmChannel = 0;
+const int resolution = 8;
+int dutyCycle = 200;
 
 #define motorR 0
 #define motorL 1
@@ -91,12 +101,12 @@ void setup() {
   Serial.println("Motor Pins assigned...");
   
   // Motor control setup
-  motor.attachMotors(IN1pin, IN2pin, IN3pin, IN4pin);
+  motor.attachMotors(motor1Pin1, motor1Pin2, motor2Pin1, motor2Pin2);
   motor.motorStop(motorR);
   motor.motorStop(motorL);
     
   // Create the BLE Device
-  BLEDevice::init("ESP32-UART");
+  BLEDevice::init("UWU");
 
   // Create the BLE Server
   pServer = BLEDevice::createServer();
@@ -130,7 +140,7 @@ void setup() {
 
 void loop() {
   String tx;
-  int Speed = HALFSPEED;
+  int Speed = FULLSPEED;
 
   // BLE disconnecting
   if (!deviceConnected && oldDeviceConnected) {
