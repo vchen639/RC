@@ -4,20 +4,20 @@
 #include <BLE2902.h>
 #include <ESP32MotorControl.h> 
 
-// Motor 1
-int motor1Pin1 = 27; 
-int motor1Pin2 = 26; 
-int enable1Pin = 14;
+// Motor R
+int IN1 = 27; 
+int IN2 = 26; 
+int ENA = 14;
 
-// Motor 2
-int motor2Pin1 = 15; 
-int motor2Pin2 = 13; 
-int enable2Pin = 12; 
+// Motor L
+int IN3 = 15; 
+int IN4 = 13; 
+int ENB = 12; 
 
 // Setting PWM properties
 const int freq = 30000;
 const int pwmChannel1 = 0;
-const int pwmChannel2= 1;
+const int pwmChannel2 = 1;
 const int resolution = 8;
 int dutyCycle = 200;
 
@@ -67,42 +67,53 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     }
 };
 
-void forward(int speed) {
-  motor.motorForward(motorR, speed);  
-  motor.motorForward(motorL, speed);
+void move_forward(){
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);  
   Serial.println("Move Forward");
 }
 
-void backward(int speed) {
-  motor.motorReverse(motorR, speed);
-  motor.motorReverse(motorL, speed);
-  Serial.println("Move Backward");     
+void move_backward(){
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  Serial.println("Move Backward"); 
+  
 }
 
-void right(int speed) {
-  motor.motorReverse(motorR, speed);  
-  motor.motorForward(motorL, speed);
-  Serial.println("Turn Right");    
+void move_left(){
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH); 
+  Serial.println("Move Left");
+ 
+}
+void move_right(){
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW); 
+  Serial.println("Move Right");
 }
 
-void left(int speed) {
-  motor.motorForward(motorR, speed);
-  motor.motorReverse(motorL, speed);
-  Serial.println("Turn Left"); 
+void no_move(){
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  Serial.println("Stop");
+  
 }
-
-void stop() {
-  motor.motorStop(motorR);
-  motor.motorStop(motorL);
-  Serial.println("Motor Stop");
-}
-
 void setup() {
   Serial.begin(115200);
   Serial.println("Motor Pins assigned...");
   
   // Motor control setup
-  motor.attachMotors(motor1Pin1, motor1Pin2, motor2Pin1, motor2Pin2);
+  motor.attachMotors(IN1, IN2, IN3, IN4);
   motor.motorStop(motorR);
   motor.motorStop(motorL);
     
@@ -137,6 +148,18 @@ void setup() {
   pServer->getAdvertising()->start();
   Serial.println("Waiting a client connection to notify...");
 
+  pinMode(IN1,OUTPUT);
+  pinMode(IN2,OUTPUT);
+  pinMode(ENA,OUTPUT);
+  pinMode(IN3,OUTPUT);
+  pinMode(IN4,OUTPUT);
+  pinMode(ENB,OUTPUT);
+
+  ledcSetup(pwmChannel1, freq, resolution);
+  ledcSetup(pwmChannel2, freq, resolution);
+  
+  ledcAttachPin(ENA, pwmChannel1);
+  ledcAttachPin(ENB, pwmChannel2);
 }
 
 void loop() {
@@ -163,21 +186,17 @@ void loop() {
     Serial.print(BLEcmd); Serial.print(" "); Serial.println(BLE_RXbuf);
     
     switch (BLEcmd) {
-      case 'F': forward(Speed);
+      case 'F': move_forward();
                 break;
-      case 'B': backward(Speed);
+      case 'B': move_backward();
                 break;
-      case 'R': right(Speed);           
+      case 'R': move_right();           
                 break;
-      case 'L': left(Speed);
+      case 'L': move_left();
                 break;
-      case 'S': stop();
+      case 'S': no_move();
                 break;  
-      case 'P': 
-                  Serial.println(String(BLE_RXbuf)); 
-                  Speed = String(BLE_RXbuf+1).toInt();
-                  Serial.println(Speed);
-                  break;                
+                
     }
     BLE_RXflag = false;
   }
