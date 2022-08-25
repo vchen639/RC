@@ -16,7 +16,8 @@ int enable2Pin = 12;
 
 // Setting PWM properties
 const int freq = 30000;
-const int pwmChannel = 0;
+const int pwmChannel1 = 0;
+const int pwmChannel2= 1;
 const int resolution = 8;
 int dutyCycle = 200;
 
