@@ -200,5 +200,6 @@ void loop() {
     }
     BLE_RXflag = false;
   }
-
+  ledcWrite(pwmChannel1, dutyCycle);
+  ledcWrite(pwmChannel2, dutyCycle);
 }
